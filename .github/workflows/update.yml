@@ -1,13 +1,10 @@
-name: Weekly Update
+name: Weekly Update with Conflict Resolution
 
 on:
   schedule:
     - cron:  '0 0 * * 1' # 每周一凌晨0点执行
   workflow_dispatch: # 允许手动触发
 
-permissions:
-  contents: write # 这里设置权限
-  
 jobs:
   update-and-commit:
     runs-on: ubuntu-latest
@@ -17,43 +14,31 @@ jobs:
       with:
         fetch-depth: 0 # 获取所有历史记录，以便于检查更新
 
-    - name: Backup .github and replaceUrl.sh
-      run: |
-        # 切换到仓库的根目录的父目录
-        cd ..
-        # 创建临时备份目录
-        mkdir temp-backup
-        # 复制 .github 和 replaceUrl.sh 到临时备份目录
-        cp -r ${{ github.workspace }}/.github temp-backup/
-        cp ${{ github.workspace }}/replaceUrl.sh temp-backup/
-
     - name: Pull latest code from upstream
       run: |
-        # 切换回仓库目录
-        cd ${{ github.workspace }}
         git remote add upstream https://github.com/2hacc/TVBox.git # 替换为上游仓库的URL
         git fetch upstream
-        if [ -n "$(git diff HEAD upstream/main)" ]; then
-          echo "Code has updates, pulling latest from upstream."
-          git reset --hard upstream/main
-          git push origin main --force-with-lease # 强制推送覆盖本地代码，但避免覆盖其他人的工作
-        else
-          echo "No updates from upstream."
-          exit 0 # 没有更新则退出
-        fi
 
-    - name: Restore .github and replaceUrl.sh
-      run: |
-        # 切换到仓库的根目录的父目录
-        cd ..
-        # 从临时备份目录恢复 .github 和 replaceUrl.sh
-        cp -r temp-backup/.github ${{ github.workspace }}/
-        cp temp-backup/replaceUrl.sh ${{ github.workspace }}/
+        # 尝试合并上游主分支，存在冲突的文件将不会被自动合并
+        git merge upstream/main --no-edit
+
+        # 检查是否存在冲突
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "Conflicts detected, attempting to use upstream version."
+          # 对于每个冲突的文件，使用上游的版本
+          for conflict in $(git status --porcelain | awk '{print $2}'); do
+            git checkout --theirs "$conflict"
+          done
+          # 添加已解决冲突的文件
+          git add .
+          # 提交解决冲突后的代码
+          git commit -m "Resolved conflicts with upstream main"
+        else
+          echo "No conflicts, all files are up to date."
+        fi
 
     - name: Run replaceUrl.sh script
       run: |
-        # 切换回仓库目录
-        cd ${{ github.workspace }}
         chmod +x replaceUrl.sh # 确保脚本可执行
         ./replaceUrl.sh
 
