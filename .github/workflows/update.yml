@@ -1,0 +1,69 @@
+name: Weekly Update
+
+on:
+  schedule:
+    - cron:  '0 0 * * 1' # 每周一凌晨0点执行
+  workflow_dispatch: # 允许手动触发
+
+permissions:
+  contents: write # 这里设置权限
+  
+jobs:
+  update-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0 # 获取所有历史记录，以便于检查更新
+
+    - name: Backup .github and replaceUrl.sh
+      run: |
+        # 切换到仓库的根目录的父目录
+        cd ..
+        # 创建临时备份目录
+        mkdir temp-backup
+        # 复制 .github 和 replaceUrl.sh 到临时备份目录
+        cp -r ${{ github.workspace }}/.github temp-backup/
+        cp ${{ github.workspace }}/replaceUrl.sh temp-backup/
+
+    - name: Pull latest code from upstream
+      run: |
+        # 切换回仓库目录
+        cd ${{ github.workspace }}
+        git remote add upstream https://github.com/2hacc/TVBox.git # 替换为上游仓库的URL
+        git fetch upstream
+        if [ -n "$(git diff HEAD upstream/main)" ]; then
+          echo "Code has updates, pulling latest from upstream."
+          git reset --hard upstream/main
+          git push origin main --force-with-lease # 强制推送覆盖本地代码，但避免覆盖其他人的工作
+        else
+          echo "No updates from upstream."
+          exit 0 # 没有更新则退出
+        fi
+
+    - name: Restore .github and replaceUrl.sh
+      run: |
+        # 切换到仓库的根目录的父目录
+        cd ..
+        # 从临时备份目录恢复 .github 和 replaceUrl.sh
+        cp -r temp-backup/.github ${{ github.workspace }}/
+        cp temp-backup/replaceUrl.sh ${{ github.workspace }}/
+
+    - name: Run replaceUrl.sh script
+      run: |
+        # 切换回仓库目录
+        cd ${{ github.workspace }}
+        chmod +x replaceUrl.sh # 确保脚本可执行
+        ./replaceUrl.sh
+
+    - name: Commit changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "Weekly update" || echo "No changes to commit"
+
+    - name: Push changes
+      run: |
+        git push origin main # 提交更改到你的仓库
