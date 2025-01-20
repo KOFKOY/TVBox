@@ -21,8 +21,9 @@ jobs:
     - name: Backup specific files and directories
       run: |
         # 备份需要保留的文件和目录
-        cp replaceUrl.sh replaceUrl.sh.bak
-        cp -r .github/workflows .github/workflows.bak
+        mkdir -p backup
+        cp replaceUrl.sh backup/
+        cp -r .github/workflows backup/
 
     - name: Pull latest code from upstream
       run: |
@@ -35,9 +36,12 @@ jobs:
         git reset HEAD replaceUrl.sh .github/workflows # 取消对保留文件的修改
         git checkout -- replaceUrl.sh .github/workflows # 恢复保留的文件
 
-        # 恢复备份的文件和目录
-        cp replaceUrl.sh.bak replaceUrl.sh
-        cp -r .github/workflows.bak .github/workflows
+         # 恢复备份的文件和目录
+        cp backup/replaceUrl.sh replaceUrl.sh
+        cp -r backup/workflows .github/workflows
+
+        # 删除备份目录
+        rm -rf backup
 
         # 添加所有更改
         git add .
