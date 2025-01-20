@@ -36,6 +36,9 @@ jobs:
         else
           echo "No conflicts, all files are up to date."
         fi
+        
+    - name: Debug 打印 replaceUrl.sh 内容
+      run: cat replaceUrl.sh
 
     - name: Run replaceUrl.sh script
       run: |
