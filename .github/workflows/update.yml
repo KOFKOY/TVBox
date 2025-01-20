@@ -41,7 +41,13 @@ jobs:
       run: |
         chmod +x replaceUrl.sh # 确保脚本可执行
         ./replaceUrl.sh
+        
+    - name: Debug 查看工作目录状态
+      run: git status
 
+    - name: Debug 列出未跟踪的文件
+      run: git ls-files --others --exclude-standard
+      
     - name: Commit changes
       run: |
         git config --local user.email "action@github.com"
