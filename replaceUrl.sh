@@ -7,6 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CDN_JSDELIVR_URL="https://cdn.jsdelivr.net/gh/KOFKOY/TVBox@main"
 CDN_MOEYY_URL="https://github.moeyy.xyz/https://raw.githubusercontent.com/KOFKOY/TVBox/main"
 GP_PROXY="https://gh-proxy.com/https://raw.githubusercontent.com/KOFKOY/TVBox/main"
+GP_CC="https://ghproxy.cc/https://raw.githubusercontent.com/KOFKOY/TVBox/main"
 
 echo "Starting directory: $SCRIPT_DIR"
 
