@@ -23,7 +23,7 @@ jobs:
         # 备份需要保留的文件和目录
         mkdir -p backup
         cp replaceUrl.sh backup/
-        cp .github/workflows backup/
+        cp .github/workflows/update.yml backup/
 
     - name: Pull latest code from upstream
       run: |
