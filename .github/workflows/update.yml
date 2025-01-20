@@ -16,26 +16,26 @@ jobs:
 
     - name: Pull latest code from upstream
       run: |
-        git remote add upstream https://github.com/2hacc/TVBox.git # 替换为上游仓库的URL
+        # 添加上游仓库
+        git remote add upstream https://github.com/2hacc/TVBox.git || true
         git fetch upstream
-
-        # 尝试合并上游主分支，存在冲突的文件将不会被自动合并
-        git merge upstream/main --no-edit
-
-        # 检查是否存在冲突
-        if [ -n "$(git status --porcelain)" ]; then
-          echo "Conflicts detected, attempting to use upstream version."
-          # 对于每个冲突的文件，使用上游的版本
-          for conflict in $(git status --porcelain | awk '{print $2}'); do
-            git checkout --theirs "$conflict"
-          done
-          # 添加已解决冲突的文件
-          git add .
-          # 提交解决冲突后的代码
-          git commit -m "Resolved conflicts with upstream main"
-        else
-          echo "No conflicts, all files are up to date."
-        fi
+    
+        # 暂存或备份不希望被覆盖的文件
+        cp replaceUrl.sh replaceUrl.sh.bak
+        cp -r .github/workflows .github/workflows.bak
+    
+        # 合并上游主分支，使用 --no-commit 暂停提交以便手动处理冲突
+        git merge upstream/main --no-edit --no-commit || true
+    
+        # 恢复不希望被覆盖的文件
+        cp replaceUrl.sh.bak replaceUrl.sh
+        cp -r .github/workflows.bak .github/workflows
+    
+        # 添加所有更改，包括恢复的文件和解决的冲突
+        git add .
+    
+        # 提交更改
+        git commit -m "Merged with upstream and restored specific files"
         
     - name: Debug 打印 replaceUrl.sh 内容
       run: cat replaceUrl.sh
