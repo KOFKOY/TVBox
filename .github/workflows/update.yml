@@ -47,6 +47,8 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add .
+        echo "提交的文件:"
+        git diff --cached --name-only
         git commit -m "Weekly update" || echo "No changes to commit"
 
     - name: Push changes
