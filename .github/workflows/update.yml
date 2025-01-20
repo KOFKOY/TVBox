@@ -18,28 +18,29 @@ jobs:
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
         
+    - name: Backup specific files and directories
+      run: |
+        # 备份需要保留的文件和目录
+        cp replaceUrl.sh replaceUrl.sh.bak
+        cp -r .github/workflows .github/workflows.bak
+
     - name: Pull latest code from upstream
       run: |
         # 添加上游仓库
         git remote add upstream https://github.com/2hacc/TVBox.git || true
         git fetch upstream
-    
-        # 暂存或备份不希望被覆盖的文件
-        cp replaceUrl.sh replaceUrl.sh.bak
-        cp -r .github/workflows .github/workflows.bak
-    
-        # 合并上游主分支，使用 --no-commit 暂停提交以便手动处理冲突
-        git merge upstream/main --no-edit --no-commit || true
-    
-        # 恢复不希望被覆盖的文件
+
+        # 保留指定文件和目录，其他文件全部替换为上游代码
+        git checkout upstream/main -- . # 检出上游仓库的全部文件
+        git reset HEAD replaceUrl.sh .github/workflows # 取消对保留文件的修改
+        git checkout -- replaceUrl.sh .github/workflows # 恢复保留的文件
+
+        # 恢复备份的文件和目录
         cp replaceUrl.sh.bak replaceUrl.sh
         cp -r .github/workflows.bak .github/workflows
-    
-        # 添加所有更改，包括恢复的文件和解决的冲突
+
+        # 添加所有更改
         git add .
-    
-        # 提交更改
-        git commit -m "Merged with upstream and restored specific files"
         
     - name: Debug 打印 replaceUrl.sh 内容
       run: cat replaceUrl.sh
