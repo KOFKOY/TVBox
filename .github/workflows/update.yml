@@ -41,6 +41,12 @@ jobs:
       run: |
         chmod +x replaceUrl.sh # 确保脚本可执行
         ./replaceUrl.sh
+
+    - name: Debug 打印文件内容
+      run: |
+        cat /home/runner/work/TVBox/TVBox/oktv.json
+        cat /home/runner/work/TVBox/TVBox/h/h.json
+
         
     - name: Debug 查看工作目录状态
       run: git status
