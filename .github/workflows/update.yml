@@ -38,7 +38,7 @@ jobs:
 
          # 恢复备份的文件和目录
         cp backup/replaceUrl.sh replaceUrl.sh
-        cp -r backup/.github/workflows .github/workflows
+        cp backup/update.yml .github/workflows
 
         # 删除备份目录
         rm -rf backup
